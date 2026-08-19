@@ -86,7 +86,7 @@ ASGI_APPLICATION = 'quickpoll_backend.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'BACKEND': 'channels_redis.pubsub.RedisPubSubChannelLayer',
         'CONFIG': {
             'hosts': [config('REDIS_URL')],
         },

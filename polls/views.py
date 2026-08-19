@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -82,10 +84,16 @@ class PollVoteView(APIView):
             )
 
         # Return updated poll data with fresh vote counts
-        return Response(
-            PollResultSerializer(poll).data,
-            status=status.HTTP_201_CREATED,
+        poll_data = PollResultSerializer(poll).data
+
+        # Broadcast to WebSocket subscribers
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'poll_{poll.pk}',
+            {'type': 'poll_update', 'data': poll_data},
         )
+
+        return Response(poll_data, status=status.HTTP_201_CREATED)
 
 
 class PollCloseView(APIView):
@@ -111,4 +119,13 @@ class PollCloseView(APIView):
         poll.is_closed = True
         poll.save(update_fields=['is_closed'])
 
-        return Response(PollResultSerializer(poll).data)
+        poll_data = PollResultSerializer(poll).data
+
+        # Broadcast to WebSocket subscribers
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'poll_{poll.pk}',
+            {'type': 'poll_update', 'data': poll_data},
+        )
+
+        return Response(poll_data)

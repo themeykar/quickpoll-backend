@@ -18,9 +18,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quickpoll_backend.settings')
 # before importing consumers or routing that depend on Django models.
 django_asgi_app = get_asgi_application()
 
+# Import consumers AFTER get_asgi_application() so the app registry is ready.
+from django.urls import re_path  # noqa: E402
+
+from polls.consumers import PollConsumer  # noqa: E402
+
 application = ProtocolTypeRouter({
     'http': django_asgi_app,
     'websocket': URLRouter([
-        # WebSocket URL routes will be added here as consumers are built.
+        re_path(r'^ws/polls/(?P<poll_id>\d+)/$', PollConsumer.as_asgi()),
     ]),
 })
+
