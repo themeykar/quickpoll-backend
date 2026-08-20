@@ -33,6 +33,16 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(',') if s.strip()],
 )
 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://localhost',
+    cast=lambda v: [s.strip() for s in v.split(',')],
+)
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+
 
 # Application definition
 
@@ -182,4 +192,5 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:5173',
     cast=lambda v: [s.strip() for s in v.split(',')],
 )
+
 
